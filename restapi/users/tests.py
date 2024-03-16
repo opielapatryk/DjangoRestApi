@@ -14,12 +14,18 @@ class UserAPITest(TestCase):
     def test_list_users(self):
         response = self.client.get(reverse('user-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 4) 
+        usernames = [user['username'] for user in response.data['results']]
+        self.assertIn(self.user1.username, usernames)
+        self.assertIn(self.user2.username, usernames)
 
     def test_retrieve_user(self):
         response = self.client.get(reverse('user-detail', kwargs={'pk': self.user1.pk}))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], self.user1.username)
+
+    def test_retrieve_wrong_user(self):
+        response = self.client.get(reverse('user-detail', kwargs={'pk': 3}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_user(self):
         data = {'username': 'newuser'}
